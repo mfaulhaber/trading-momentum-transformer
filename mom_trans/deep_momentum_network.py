@@ -4,7 +4,8 @@ import pathlib
 import shutil
 import copy
 
-from keras_tuner.tuners.randomsearch import RandomSearch
+#from keras_tuner.tuners.randomsearch import RandomSearch
+
 from abc import ABC, abstractmethod
 
 from tensorflow import keras
@@ -14,6 +15,7 @@ import pandas as pd
 import collections
 
 import keras_tuner as kt
+from keras_tuner.src.engine.tuner_utils import TunerCallback
 
 from settings.hp_grid import (
     HP_HIDDEN_LAYER_SIZE,
@@ -189,7 +191,8 @@ class TunerDiversifiedSharpe(kt.tuners.RandomSearch):
         for callback in original_callbacks:
             if isinstance(callback, SharpeValidationLoss):
                 callback.set_weights_save_loc(
-                    self._get_checkpoint_fname(trial.trial_id, self._reported_step)
+                    #self._get_checkpoint_fname(trial.trial_id, self._reported_step)
+                    self._get_checkpoint_fname(trial.trial_id)
                 )
 
         # Run the training process multiple times.
@@ -198,12 +201,22 @@ class TunerDiversifiedSharpe(kt.tuners.RandomSearch):
             copied_fit_kwargs = copy.copy(kwargs)
             callbacks = self._deepcopy_callbacks(original_callbacks)
             self._configure_tensorboard_dir(callbacks, trial, execution)
-            callbacks.append(kt.engine.tuner_utils.TunerCallback(self, trial))
+
+            # TODO: mjf : there is no TunerCallback in keras tuner
+            #callbacks.append(kt.engine.tuner_utils.TunerCallback(self, trial))
+            callbacks.append(TunerCallback(self, trial))
+
             # Only checkpoint the best epoch across all executions.
             # callbacks.append(model_checkpoint)
             copied_fit_kwargs["callbacks"] = callbacks
 
+            # TODO: mjf
+            print(f"type={type(trial)}, trial={trial}")
+            print(f"type={type(args)}, args={args}")
+            #print(f"type={type(copied_fit_kwargs)}, copied_fit_kwargs={copied_fit_kwargs}")
+
             history = self._build_and_fit_model(trial, args, copied_fit_kwargs)
+
             for metric, epoch_values in history.history.items():
                 if self.oracle.objective.direction == "min":
                     best_value = np.min(epoch_values)
@@ -216,7 +229,8 @@ class TunerDiversifiedSharpe(kt.tuners.RandomSearch):
         for metric, execution_values in metrics.items():
             averaged_metrics[metric] = np.mean(execution_values)
         self.oracle.update_trial(
-            trial.trial_id, metrics=averaged_metrics, step=self._reported_step
+            #trial.trial_id, metrics=averaged_metrics, step=self._reported_step
+            trial.trial_id, metrics=averaged_metrics, step=0
         )
 
 
@@ -281,6 +295,10 @@ class DeepMomentumNetworkModel(ABC):
         return get_indices(val_time), len(mapping)
 
     def hyperparameter_search(self, train_data, valid_data):
+        #TODO: mjf
+        print(f"train_data type = {type(train_data)}")
+        print(f"train_data type = {type(valid_data)}")
+
         data, labels, active_flags, _, _ = ModelFeatures._unpack(train_data)
         val_data, val_labels, val_flags, _, val_time = ModelFeatures._unpack(valid_data)
 
@@ -453,6 +471,8 @@ class DeepMomentumNetworkModel(ABC):
         data,
         model,
         sliding_window=True,
+        #years_geq=np.iinfo(int).min,
+        #years_lt=np.iinfo(int).max,
         years_geq=np.iinfo(np.int32).min,
         years_lt=np.iinfo(np.int32).max,
     ):

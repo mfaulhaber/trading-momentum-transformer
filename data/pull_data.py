@@ -16,6 +16,14 @@ def pull_quandl_sample_data(ticker: str) -> pd.DataFrame:
         .replace(0.0, np.nan)
     )
 
+def pull_yahoo_data(ticker: str) -> pd.DataFrame:
+    print(f"Reading yahoo data for {ticker}")
+    return (
+        pd.read_csv(os.path.join("data", "yahoo", f"{ticker}.csv"), parse_dates=[0])
+        .rename(columns={"Date": "date", "Close": "close"})
+        .set_index("date")
+        .replace(0.0, np.nan)
+    )
 
 def pull_pinnacle_data(ticker: str) -> pd.DataFrame:
     return pd.read_csv(

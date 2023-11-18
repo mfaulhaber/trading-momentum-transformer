@@ -117,7 +117,8 @@ def deep_momentum_strategy_features(df_asset: pd.DataFrame) -> pd.DataFrame:
     if len(df_asset):
         df_asset["day_of_week"] = df_asset.index.dayofweek
         df_asset["day_of_month"] = df_asset.index.day
-        df_asset["week_of_year"] = df_asset.index.weekofyear
+        #df_asset["week_of_year"] = df_asset.index.weekofyear
+        df_asset["week_of_year"] =  pd.DatetimeIndex(df_asset.index).isocalendar().week
         df_asset["month_of_year"] = df_asset.index.month
         df_asset["year"] = df_asset.index.year
         df_asset["date"] = df_asset.index  # duplication but sometimes makes life easier
@@ -133,13 +134,13 @@ def deep_momentum_strategy_features(df_asset: pd.DataFrame) -> pd.DataFrame:
 
 
 def include_changepoint_features(
-    features: pd.DataFrame, cpd_folder_name: pd.DataFrame, lookback_window_length: int
+    features: pd.DataFrame, cpd_folder_name: str, lookback_window_length: int
 ) -> pd.DataFrame:
     """combine CP features and DMN featuress
 
     Args:
         features (pd.DataFrame): features
-        cpd_folder_name (pd.DataFrame): folder containing CPD results
+        cpd_folder_name (str): folder containing CPD results
         lookback_window_length (int): LBW used for the CPD
 
     Returns:

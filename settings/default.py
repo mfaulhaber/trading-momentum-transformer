@@ -17,6 +17,29 @@ FEATURES_QUANDL_FILE_PATH = lambda lbw: os.path.join(
 
 FEATURES_QUANDL_FILE_PATH_DEFAULT = FEATURES_QUANDL_FILE_PATH(CPD_DEFAULT_LBW)
 
+CPD_YAHOO_OUTPUT_FOLDER = lambda lbw: os.path.join(
+    "data", f"yahoo_cpd_{(lbw if lbw else 'none')}lbw"
+)
+
+FEATURES_YAHOO_FILE_PATH = lambda lbw: os.path.join(
+    "data", f"yahoo_cpd_{(lbw if lbw else 'none')}lbw.csv"
+)
+
+#YAHOO_TICKERS = [
+#    "AAPL",
+#    "ADBE",
+#    "AMZN",
+#    "GOOG",
+#    "MSFT",
+#    "NFLX",
+#    "NVDA",
+#    "TSLA",
+#]
+
+YAHOO_TICKERS = [
+    "AAPL",
+]
+
 QUANDL_TICKERS = [
     "ICE_SB",
     "CME_SF",
